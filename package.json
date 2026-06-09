@@ -1,0 +1,14 @@
+{
+  "name": "vk-coupon-bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "VK bot service that issues WordPress/WooCommerce coupons for group subscribers.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  }
+}
