@@ -1,7 +1,6 @@
 import { createServer } from "node:http";
 import { config } from "./config.js";
 import { handleMessageNew } from "./bot.js";
-import { createCartLead } from "./cartLeads.js";
 
 const server = createServer(async (request, response) => {
   try {
@@ -12,11 +11,6 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "POST" && request.url === "/vk/callback") {
       await handleVkCallback(request, response);
-      return;
-    }
-
-    if (request.method === "POST" && request.url === "/lead/cart") {
-      await handleCartLead(request, response);
       return;
     }
 
@@ -58,34 +52,6 @@ async function handleVkCallback(request, response) {
   }
 }
 
-async function handleCartLead(request, response) {
-  if (config.leadApiSecret === "") {
-    sendJson(response, 500, { error: "lead api secret is not configured" });
-    return;
-  }
-
-  if (config.leadPeerId === "") {
-    sendJson(response, 500, { error: "lead peer id is not configured" });
-    return;
-  }
-
-  const actualSecret = String(request.headers["x-vk-bot-secret"] || "");
-
-  if (actualSecret !== config.leadApiSecret) {
-    sendJson(response, 403, { error: "forbidden" });
-    return;
-  }
-
-  const lead = await readJson(request);
-  const createdLead = createCartLead(lead);
-
-  sendJson(response, 200, {
-    ok: true,
-    lead_id: createdLead.leadId,
-    redirect_url: createdLead.redirectUrl,
-  });
-}
-
 async function readJson(request) {
   const chunks = [];
 
@@ -107,13 +73,6 @@ function sendText(response, statusCode, body) {
     "Content-Type": "text/plain; charset=utf-8",
   });
   response.end(body);
-}
-
-function sendJson(response, statusCode, body) {
-  response.writeHead(statusCode, {
-    "Content-Type": "application/json; charset=utf-8",
-  });
-  response.end(JSON.stringify(body));
 }
 
 function isExpectedGroup(groupId) {

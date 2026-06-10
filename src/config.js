@@ -14,8 +14,6 @@ export const config = {
   wpCouponEndpoint: requiredEnv("WP_COUPON_ENDPOINT"),
   wpApiSecret: requiredEnv("WP_API_SECRET"),
   couponDiscountPercent: intEnv("COUPON_DISCOUNT_PERCENT", 10),
-  leadApiSecret: process.env.LEAD_API_SECRET || process.env.WP_API_SECRET || "",
-  leadPeerId: process.env.LEAD_PEER_ID || "",
 };
 
 function loadDotEnv() {
