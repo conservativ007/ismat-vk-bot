@@ -29,6 +29,14 @@ export async function sendMessage(userId, message, keyboard = null) {
   await vkMethod('messages.send', params);
 }
 
+export async function sendPeerMessage(peerId, message) {
+  await vkMethod('messages.send', {
+    peer_id: peerId,
+    random_id: Date.now() + Math.floor(Math.random() * 100000),
+    message
+  });
+}
+
 async function vkMethod(method, params) {
   const body = new URLSearchParams({
     ...stringifyParams(params),

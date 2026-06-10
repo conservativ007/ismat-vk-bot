@@ -1,6 +1,8 @@
 import { couponKeyboard } from './keyboard.js';
-import { isGroupMember, sendMessage } from './vkApi.js';
+import { isGroupMember, sendMessage, sendPeerMessage } from './vkApi.js';
 import { issueCoupon } from './wordpressApi.js';
+import { config } from './config.js';
+import { buildCartLeadAdminMessage, consumeCartLeadFromMessage } from './cartLeads.js';
 
 const CHECK_COMMANDS = new Set([
   'проверить подписку',
@@ -16,6 +18,21 @@ export async function handleMessageNew(event) {
   const userId = message?.from_id;
 
   if (!userId || userId < 1) {
+    return;
+  }
+
+  console.log(`VK message from_id: ${userId}`);
+  console.log('VK message payload/ref/text:', {
+    ref: message.ref || '',
+    payload: message.payload || '',
+    text: message.text || ''
+  });
+
+  const cartLead = consumeCartLeadFromMessage(message);
+
+  if (cartLead) {
+    await sendPeerMessage(config.leadPeerId, buildCartLeadAdminMessage(cartLead, userId));
+    await sendMessage(userId, 'Спасибо! Заявка передана менеджеру, скоро с вами свяжемся.');
     return;
   }
 
