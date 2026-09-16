@@ -74,4 +74,4 @@ Recommended `wp-config.php` constant:
 define('VK_COUPONS_API_SECRET', 'same_secret_as_WP_API_SECRET_in_bot_env');
 ```
 
-The endpoint creates a personal one-time percent coupon and returns the same coupon again if the same `vk_user_id` requests it twice.
+The endpoint creates a personal one-time percent coupon and returns the same coupon again while it is still valid for the same `vk_user_id`. Once that coupon expires (30 days by default) or is used, the next request issues a new one.

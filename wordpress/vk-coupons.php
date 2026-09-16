@@ -2,7 +2,7 @@
 /**
  * Plugin Name: VK Coupons API
  * Description: Issues one-time WooCommerce coupons for verified VK subscribers.
- * Version: 0.1.0
+ * Version: 0.1.1
  */
 
 if (!defined('ABSPATH')) {
@@ -96,7 +96,7 @@ function vk_coupons_issue_coupon(WP_REST_Request $request) {
 
     update_post_meta($coupon_id, VK_COUPONS_META_VK_USER_ID, $vk_user_id);
     update_post_meta($coupon_id, VK_COUPONS_META_ISSUED_AT, current_time('mysql', true));
-    add_option(vk_coupons_option_name($vk_user_id), $coupon_code, '', false);
+    update_option(vk_coupons_option_name($vk_user_id), $coupon_code, false);
 
     return rest_ensure_response([
         'coupon' => $coupon_code,
@@ -124,7 +124,7 @@ function vk_coupons_get_api_secret() {
 function vk_coupons_get_existing_code($vk_user_id) {
     $option_code = (string) get_option(vk_coupons_option_name($vk_user_id), '');
 
-    if ($option_code !== '' && wc_get_coupon_id_by_code($option_code)) {
+    if ($option_code !== '' && vk_coupons_code_usable($option_code)) {
         return $option_code;
     }
 
@@ -149,11 +149,23 @@ function vk_coupons_get_existing_code($vk_user_id) {
 
     $code = get_the_title((int) $query->posts[0]);
 
-    if ($code !== '') {
+    if ($code !== '' && vk_coupons_code_usable($code)) {
         update_option(vk_coupons_option_name($vk_user_id), $code, false);
+
+        return $code;
     }
 
-    return $code;
+    return '';
+}
+
+/**
+ * Only reuse a coupon that is still valid: expired or already used ones must
+ * be replaced instead of being handed out again.
+ */
+function vk_coupons_code_usable($code) {
+    $coupon = new WC_Coupon($code);
+
+    return $coupon->get_id() > 0 && $coupon->is_valid();
 }
 
 function vk_coupons_get_discount_percent(WP_REST_Request $request) {
